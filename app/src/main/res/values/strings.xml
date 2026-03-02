@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">SpaceAuth</string>
+    <string name="debug_icon">⚙</string>
+    <string name="status_no_room">● No Room Enrolled</string>
+    <string name="tagline">Your environment is your key</string>
+    <string name="enroll_icon">📡</string>
+    <string name="enroll_title">Enroll Space</string>
+    <string name="enroll_desc">Register this room\'s signature</string>
+    <string name="verify_icon">🔐</string>
+    <string name="verify_title">Verify Space</string>
+    <string name="verify_desc">Authenticate against stored signature</string>
+    <string name="version_footer">v1.0 · Environmental Auth Framework</string>
 </resources>
