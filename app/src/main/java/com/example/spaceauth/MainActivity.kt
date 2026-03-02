@@ -1,41 +1,55 @@
 package com.example.spaceauth
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.spaceauth.magnetometer.MagnetometerSensor
 import com.example.spaceauth.wifi.WifiScanner
-import com.google.android.material.button.MaterialButton
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var magText: TextView
     private lateinit var wifiText: TextView
-    private lateinit var scanButton: MaterialButton
+    private lateinit var enrollCard: View
+    private lateinit var verifyCard: View
+    private lateinit var authManager: AuthManager
 
     private lateinit var magSensor: MagnetometerSensor
     private lateinit var wifiScanner: WifiScanner
 
-    private val LOCATION_PERMISSION_CODE = 100
+    private val PERMISSION_CODE = 100
     private val handler = Handler(Looper.getMainLooper())
     private var updateMagRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        authManager = AuthManager(this)
+
+        if (!authManager.isAuthenticated()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_main)
 
         // Initialize UI elements
         magText = findViewById(R.id.magText)
         wifiText = findViewById(R.id.wifiText)
-        scanButton = findViewById(R.id.scanButton)
+        enrollCard = findViewById(R.id.enrollCard)
+        verifyCard = findViewById(R.id.scanButton) // Using the ID from the card
+        val debugIcon: View = findViewById(R.id.debugIcon)
 
         // Initialize sensors
         magSensor = MagnetometerSensor(this)
@@ -43,9 +57,18 @@ class MainActivity : AppCompatActivity() {
 
         magSensor.startListening()
 
-        // Set button click to start scan
-        scanButton.setOnClickListener {
+        enrollCard.setOnClickListener {
             checkPermissionAndScan()
+        }
+
+        verifyCard.setOnClickListener {
+            checkPermissionAndScan()
+        }
+
+        debugIcon.setOnClickListener {
+            authManager.logout()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
 
         // Update magnetometer live every 1 second
@@ -54,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                 val magFeatures = magSensor.getAverageFeatures()
                 magText.text = String.format(
                     Locale.getDefault(),
-                    "X: %.2f\nY: %.2f\nZ: %.2f",
+                    "MAG: X:%.1f Y:%.1f Z:%.1f",
                     magFeatures.magX_avg,
                     magFeatures.magY_avg,
                     magFeatures.magZ_avg
@@ -85,24 +108,23 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 missingPermissions.toTypedArray(),
-                LOCATION_PERMISSION_CODE
+                PERMISSION_CODE
             )
         }
     }
 
     private fun performScan() {
-        // --- Magnetometer ---
         magSensor.reset()
         magSensor.startListening()
 
-        // --- WiFi ---
         wifiScanner.startScan { wifiResults ->
             val builder = StringBuilder()
             if (wifiResults.isEmpty()) {
-                builder.append("No networks found or permission denied.")
+                builder.append("No WiFi networks found.")
             } else {
-                for (wf in wifiResults) {
-                    builder.append("SSID: ${wf.ssid}\nRSSI: ${wf.rssi} dBm\n\n")
+                builder.append("WIFI: ")
+                for (wf in wifiResults.take(2)) {
+                    builder.append("${wf.ssid}(${wf.rssi}) ")
                 }
             }
             wifiText.text = builder.toString()
@@ -115,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_CODE) {
+        if (requestCode == PERMISSION_CODE) {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 performScan()
             }

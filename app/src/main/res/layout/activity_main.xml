@@ -1,163 +1,195 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_primary"
-    android:fillViewport="true">
+    android:background="@color/bg_primary">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- TOP BAR -->
+    <TextView
+        android:id="@+id/appTitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:text="@string/app_name"
+        android:textColor="@color/accent_cyan"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="52dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
-        <!-- Top Bar -->
+    <TextView
+        android:id="@+id/debugIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/debug_icon"
+        android:textSize="22sp"
+        android:textColor="@color/text_secondary"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="52dp"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- STATUS CHIP -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/status_no_room"
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:fontFamily="monospace"
+        android:background="@color/bg_card"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="@id/appTitle"
+        app:layout_constraintTop_toBottomOf="@id/appTitle"/>
+
+    <!-- TAGLINE -->
+    <TextView
+        android:id="@+id/tagline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/tagline"
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:fontFamily="monospace"
+        android:layout_marginTop="36dp"
+        app:layout_constraintStart_toStartOf="@id/appTitle"
+        app:layout_constraintTop_toBottomOf="@id/statusText"/>
+
+    <!-- ENROLL CARD -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/enrollCard"
+        android:layout_width="0dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="36dp"
+        app:cardBackgroundColor="@color/bg_card"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tagline">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enroll_icon"
+                android:textSize="32sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enroll_title"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enroll_desc"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- VERIFY CARD / SENSOR VIEW -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/scanButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="160dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="20dp"
+        app:cardBackgroundColor="@color/bg_card"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/enrollCard">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="space_between">
+            android:orientation="vertical"
+            android:padding="24dp">
 
             <TextView
-                android:id="@+id/appTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textColor="@color/accent_cyan"
-                android:textSize="22sp"
+                android:text="@string/verify_icon"
+                android:textSize="32sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/verify_title"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:fontFamily="monospace"/>
+                android:fontFamily="monospace"
+                android:layout_marginTop="8dp"/>
 
             <TextView
-                android:id="@+id/debugIcon"
+                android:id="@+id/magText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/debug_icon"
-                android:textSize="22sp"
-                android:textColor="@color/text_secondary"/>
+                android:text="@string/placeholder_mag_values"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/wifiText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/placeholder_wifi_scan"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"/>
+
         </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
-        <!-- Status Chip -->
-        <TextView
-            android:id="@+id/statusText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/status_no_room"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            android:fontFamily="monospace"
-            android:background="@color/bg_card"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:layout_marginTop="16dp"/>
+    <!-- BOTTOM VERSION TEXT -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/version_footer"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
-        <!-- Magnetometer Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:strokeColor="#B2EBF2"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="#E0F7FA">
-
-                <TextView
-                    android:id="@+id/magLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_magnetometer"
-                    android:textSize="12sp"
-                    android:letterSpacing="0.1"
-                    android:textColor="#006064"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/magText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/placeholder_mag_values"
-                    android:textColor="#000000"
-                    android:textSize="20sp"
-                    android:fontFamily="monospace"
-                    android:lineSpacingExtra="4dp"
-                    tools:text="X: 0.00\nY: 0.00\nZ: 0.00"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- WiFi Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:strokeColor="#FFE0B2"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="#FFF3E0">
-
-                <TextView
-                    android:id="@+id/wifiLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_wifi_networks"
-                    android:textSize="12sp"
-                    android:letterSpacing="0.1"
-                    android:textColor="#E65100"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/wifiText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:minHeight="120dp"
-                    android:text="@string/placeholder_wifi_scan"
-                    android:textColor="#444444"
-                    android:textSize="16sp"
-                    tools:text="Waiting for scan..."/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Scan Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/scanButton"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="@string/btn_start_spatial_scan"
-            android:textSize="16sp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            app:cornerRadius="8dp"
-            app:icon="@android:drawable/ic_menu_mylocation"/>
-
-        <!-- Bottom Version Text -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/version_footer"
-            android:textColor="@color/text_secondary"
-            android:textSize="11sp"
-            android:fontFamily="monospace"
-            android:layout_marginTop="24dp"
-            android:layout_gravity="center_horizontal"/>
-    </LinearLayout>
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
