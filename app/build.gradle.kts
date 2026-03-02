@@ -46,4 +46,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("org.apache.commons:commons-math3:3.6.1")
 }
