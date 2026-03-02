@@ -3,91 +3,74 @@ package com.example.spaceauth.acoustic
 import org.apache.commons.math3.transform.DftNormalization
 import org.apache.commons.math3.transform.FastFourierTransformer
 import org.apache.commons.math3.transform.TransformType
+import kotlin.math.sqrt
 
 object AcousticProcessor {
 
-    fun extract(samples: ShortArray, sampleRate: Int): AcousticFeatureVector {
-
-        val frameSize = sampleRate / 10   // 100 ms
-        if (frameSize <= 0) return AcousticFeatureVector(0.0, 0.0, 0.0)
+    /**
+     * Processes raw audio samples into 5 stable FFT-based features for ML.
+     * @param samples Raw PCM 16-bit samples
+     * @param sampleRate Sample rate of audio (e.g., 44100)
+     * @return FloatArray of 5 values: fft1..fft5 (aggregated per frequency band)
+     */
+    fun extractForML(samples: ShortArray, sampleRate: Int): FloatArray {
+        val frameDurationMs = 100
+        val frameSize = (sampleRate * frameDurationMs / 1000.0).toInt()
+        if (frameSize <= 0) return FloatArray(5) { 0f }
 
         val totalFrames = samples.size / frameSize
-        if (totalFrames == 0) return AcousticFeatureVector(0.0, 0.0, 0.0)
+        if (totalFrames == 0) return FloatArray(5) { 0f }
 
-        var rmsSum = 0.0
-        var zcrSum = 0.0
-        var centroidSum = 0.0
-        var processedFrames = 0
+        val fftFeaturesPerFrame = mutableListOf<FloatArray>()
 
-        for (frameIndex in 0 until totalFrames) {
+        val transformer = FastFourierTransformer(DftNormalization.STANDARD)
 
-            val start = frameIndex * frameSize
-            val end = start + frameSize
-            val frame = samples.sliceArray(start until end)
-
+        for (f in 0 until totalFrames) {
+            val start = f * frameSize
+            val frame = samples.sliceArray(start until (start + frameSize))
             val doubleFrame = frame.map { it.toDouble() }.toDoubleArray()
 
-            // ---- RMS ----
-            val rms = Math.sqrt(doubleFrame.map { it * it }.average())
-            rmsSum += rms
-
-            // ---- ZCR ----
-            var zeroCrossings = 0
-            for (i in 1 until frame.size) {
-                if ((frame[i - 1] >= 0 && frame[i] < 0) ||
-                    (frame[i - 1] < 0 && frame[i] >= 0)) {
-                    zeroCrossings++
-                }
-            }
-            val zcr = zeroCrossings.toDouble() / frame.size
-            zcrSum += zcr
-
-            // ---- Apply Hamming Window ----
+            // Apply Hamming window
             for (i in doubleFrame.indices) {
-                val window = 0.54 - 0.46 * Math.cos(2.0 * Math.PI * i / (doubleFrame.size - 1))
-                doubleFrame[i] *= window
+                val w = 0.54 - 0.46 * kotlin.math.cos(2.0 * Math.PI * i / (doubleFrame.size - 1))
+                doubleFrame[i] *= w
             }
 
-            // ---- FFT ----
-            val size = Integer.highestOneBit(doubleFrame.size)
-            if (size == 0) continue
-            val trimmed = doubleFrame.copyOf(size)
+            // FFT
+            val fftSize = Integer.highestOneBit(doubleFrame.size)  // next power of 2
+            if (fftSize <= 0) continue
+            val trimmed = doubleFrame.copyOf(fftSize)
+            val fftResult = transformer.transform(trimmed, TransformType.FORWARD)
+            val magnitudes = fftResult.map { it.abs() }.toDoubleArray()
 
-            val transformer = FastFourierTransformer(DftNormalization.STANDARD)
-            val fft = transformer.transform(trimmed, TransformType.FORWARD)
-
-            val magnitudes = fft.map { it.abs() }
-
+            // Take first half (Nyquist)
             val halfSize = magnitudes.size / 2
+            val halfMag = magnitudes.sliceArray(0 until halfSize)
 
-            var weightedSum = 0.0
-            var magnitudeSum = 0.0
-
-            for (i in 0 until halfSize) {
-                val frequency = i * sampleRate.toDouble() / size
-                weightedSum += frequency * magnitudes[i]
-                magnitudeSum += magnitudes[i]
+            // Split into 5 frequency bands and average
+            val bandSize = halfSize / 5
+            val fftBands = FloatArray(5) { 0f }
+            for (b in 0 until 5) {
+                val bandStart = b * bandSize
+                val bandEnd = if (b == 4) halfSize else (b + 1) * bandSize
+                val sum = halfMag.slice(bandStart until bandEnd).sum()
+                val avg = sum / (bandEnd - bandStart)
+                fftBands[b] = avg.toFloat()
             }
 
-            val centroid =
-                if (magnitudeSum == 0.0) 0.0 else weightedSum / magnitudeSum
-
-            centroidSum += centroid
-            processedFrames++
+            fftFeaturesPerFrame.add(fftBands)
         }
 
-        if (processedFrames == 0) {
-            return AcousticFeatureVector(0.0, 0.0, 0.0)
+        // Aggregate across frames (median for stability)
+        val fftFinal = FloatArray(5) { 0f }
+        for (i in 0 until 5) {
+            val bandValues = fftFeaturesPerFrame.map { it[i] }.sorted()
+            val median = if (bandValues.isEmpty()) 0f
+            else if (bandValues.size % 2 == 1) bandValues[bandValues.size / 2]
+            else (bandValues[bandValues.size / 2] + bandValues[bandValues.size / 2 - 1]) / 2f
+            fftFinal[i] = median
         }
 
-        val avgRms = rmsSum / processedFrames
-        val avgZcr = zcrSum / processedFrames
-        val avgCentroid = centroidSum / processedFrames
-
-        return AcousticFeatureVector(
-            energy = avgRms,
-            zeroCrossingRate = avgZcr,
-            spectralCentroid = avgCentroid
-        )
+        return fftFinal
     }
 }

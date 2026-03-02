@@ -39,9 +39,6 @@ class AcousticSensor {
                 val recordingBuffer = ShortArray(totalSamples)
                 val tempBuffer = ShortArray(minBufferSize)
 
-                // The reliability of ToneGenerator can vary across devices. It may play from
-                // the wrong speaker, be suppressed, or not reflect properly for an acoustic echo.
-                // A more robust solution might involve playing a known chirp and using cross-correlation.
                 val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
                 toneGen.startTone(ToneGenerator.TONE_CDMA_PIP, 150)
 
@@ -56,10 +53,8 @@ class AcousticSensor {
                         System.arraycopy(tempBuffer, 0, recordingBuffer, samplesRead, toCopy)
                         samplesRead += toCopy
                     } else if (read < 0) {
-                        // Error case
                         throw IllegalStateException("AudioRecord read failed with error code: $read")
                     } else {
-                        // read == 0, end of stream?
                         break
                     }
                 }
