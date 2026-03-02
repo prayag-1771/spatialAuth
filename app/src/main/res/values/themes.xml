@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Theme for SpaceAuth App -->
     <style name="Theme.SpaceAuth" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary colors -->
         <item name="colorPrimary">@color/accent_cyan</item>
         <item name="colorPrimaryVariant">@color/accent_cyan_dim</item>
         <item name="colorOnPrimary">@color/bg_primary</item>
+
+        <!-- Secondary colors (optional, for Material components that use secondary) -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- Surface colors -->
         <item name="colorSurface">@color/bg_card</item>
         <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Window & system bars -->
         <item name="android:windowBackground">@color/bg_primary</item>
         <item name="android:statusBarColor">@color/bg_primary</item>
         <item name="android:navigationBarColor">@color/bg_primary</item>
+
+        <!-- Font -->
         <item name="android:fontFamily">monospace</item>
     </style>
 </resources>
