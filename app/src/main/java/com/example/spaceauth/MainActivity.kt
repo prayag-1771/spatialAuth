@@ -1,175 +1,148 @@
 package com.example.spaceauth
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.method.ScrollingMovementMethod
 import android.util.Log
-import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.spaceauth.acoustic.AcousticProcessor
 import com.example.spaceauth.acoustic.AcousticSensor
+import com.example.spaceauth.acoustic.MagnetometerSensor
+import com.example.spaceauth.wifi.WifiScanner
+import com.google.android.material.button.MaterialButton
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var statusText: TextView
-    private lateinit var acousticSensor: AcousticSensor
-    private lateinit var scanButton: Button
-    private lateinit var wifiManager: WifiManager
+    private lateinit var magText: TextView
+    private lateinit var wifiText: TextView
+    private lateinit var acousticText: TextView
+    private lateinit var scanButton: MaterialButton
+
+    private lateinit var magSensor: MagnetometerSensor
+    private var acousticSensor: AcousticSensor? = null
+    private lateinit var wifiScanner: WifiScanner
 
     private val permissionRequestCode = 100
     private val handler = Handler(Looper.getMainLooper())
+
+    private val magUpdateRunnable = object : Runnable {
+        override fun run() {
+            if (::magSensor.isInitialized) {
+                val features = magSensor.getAverageFeatures()
+                magText.text = String.format(
+                    Locale.getDefault(),
+                    "X: %.2f\nY: %.2f\nZ: %.2f",
+                    features.magX_avg, features.magY_avg, features.magZ_avg
+                )
+            }
+            handler.postDelayed(this, 1000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        acousticSensor = AcousticSensor()
-        statusText = findViewById(R.id.statusText)
-        statusText.movementMethod = ScrollingMovementMethod()
+        // Initialize UI
+        magText = findViewById(R.id.magText)
+        wifiText = findViewById(R.id.wifiText)
+        acousticText = findViewById(R.id.acousticText)
         scanButton = findViewById(R.id.scanButton)
-        wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-        scanButton.setOnClickListener {
-            checkPermissions()
-        }
-    }
+        // Initialize Modules
+        magSensor = MagnetometerSensor(this)
+        acousticSensor = AcousticSensor()
+        wifiScanner = WifiScanner(this)
 
-    private fun startAcousticScan() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
+        magSensor.startListening()
 
-        statusText.text = "Running 10 acoustic tests...\n"
-        runAcousticTest(1) // Start the first test
-    }
+        scanButton.setOnClickListener { checkPermissions() }
 
-    private fun runAcousticTest(testIndex: Int) {
-        if (testIndex > 10) {
-            runOnUiThread {
-                statusText.append("\n\nTests complete.")
-            }
-            return // Stop recursion
-        }
-
-        acousticSensor.startCapture(1000) { buffer, error ->
-            if (error != null) {
-                Log.e("ACOUSTIC_TEST", "Error on test $testIndex: ${error.message}")
-                runOnUiThread {
-                    statusText.append("\nTest $testIndex failed.")
-                }
-            } else if (buffer != null) {
-                val features = AcousticProcessor.extract(buffer, acousticSensor.sampleRate)
-                Log.d(
-                    "ACOUSTIC_TEST",
-                    "Test $testIndex: Energy=${features.energy}, " +
-                            "ZCR=${features.zeroCrossingRate}, " +
-                            "Centroid=${features.spectralCentroid}"
-                )
-                runOnUiThread {
-                    statusText.append(
-                        "\nTest $testIndex:\n" +
-                                "E=${features.energy}\n" +
-                                "ZCR=${features.zeroCrossingRate}\n" +
-                                "C=${features.spectralCentroid}\n"
-                    )
-                }
-            }
-
-            // Always schedule the next test. The guard at the start of the function will stop it.
-            handler.postDelayed({
-                runAcousticTest(testIndex + 1)
-            }, 500)
-        }
+        // Live Magnetometer Update
+        handler.post(magUpdateRunnable)
     }
 
     private fun checkPermissions() {
-        val requiredPermissions = arrayOf(
+        val permissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.NEARBY_WIFI_DEVICES,
             Manifest.permission.RECORD_AUDIO
         )
-        val permissionsToRequest = requiredPermissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }.toTypedArray()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
+        }
 
-        if (permissionsToRequest.isNotEmpty()) {
-            ActivityCompat.requestPermissions(
-                this,
-                permissionsToRequest,
-                permissionRequestCode
-            )
+        val missing = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (missing.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, missing.toTypedArray(), permissionRequestCode)
         } else {
             startScans()
         }
     }
 
     private fun startScans() {
-        // scanWifi()
-        startAcousticScan()
-    }
-
-    private fun scanWifi() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-
-        if (!wifiManager.isWifiEnabled) {
-            statusText.text = "Please enable WiFi first."
-            return
-        }
-
-        @Suppress("DEPRECATION")
-        wifiManager.startScan()
-        @Suppress("DEPRECATION")
-        val results = wifiManager.scanResults
-
-        if (results.isEmpty()) {
-            statusText.text = "No networks found. Ensure Location is ON."
-            return
-        }
-
-        val builder = StringBuilder()
-        builder.append("Networks Found:\n\n")
-
-        for (result in results.take(5)) {
-            builder.append("SSID: ${result.SSID}\n")
-            builder.append("RSSI: ${result.level} dBm\n\n")
-        }
-
-        statusText.text = builder.toString()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == permissionRequestCode) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                startScans()
-            } else {
-                statusText.text = "Permission Denied."
+        wifiText.text = "Scanning WiFi..."
+        acousticText.text = "Capturing Acoustic Signature..."
+        magSensor.reset()
+        
+        // WiFi Scan via separate module
+        wifiScanner.startScan { results ->
+            runOnUiThread {
+                if (results == null) {
+                    wifiText.text = "WiFi Scan Failed."
+                } else {
+                    val sb = StringBuilder()
+                    results.sortedByDescending { it.level }.take(3).forEachIndexed { index, scanResult ->
+                        @Suppress("DEPRECATION")
+                        sb.append("wifi${index + 1}: ${scanResult.level} dBm\n")
+                    }
+                    wifiText.text = if (sb.isEmpty()) "No networks found." else sb.toString()
+                }
             }
         }
+
+        // Acoustic Scan
+        runAcousticTest()
+    }
+
+    private fun runAcousticTest() {
+        // Capture for 3 seconds for stability
+        acousticSensor?.startCapture(3000) { buffer, error ->
+            if (buffer != null) {
+                val fftFeatures = AcousticProcessor.extractForML(buffer, 44100)
+                
+                runOnUiThread {
+                    acousticText.text = String.format(
+                        Locale.getDefault(),
+                        "fft1: %.4f\nfft2: %.4f\nfft3: %.4f\nfft4: %.4f\nfft5: %.4f",
+                        fftFeatures[0], fftFeatures[1], fftFeatures[2], fftFeatures[3], fftFeatures[4]
+                    )
+                }
+                Log.d("Acoustic", "Features: ${fftFeatures.joinToString()}")
+            } else {
+                runOnUiThread { acousticText.text = "Acoustic Error: ${error?.message}" }
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        wifiScanner.unregister()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        magSensor.stopListening()
+        wifiScanner.unregister()
+        handler.removeCallbacksAndMessages(null)
     }
 }

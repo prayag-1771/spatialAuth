@@ -1,32 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:background="#F5F5F5"
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Room Scanner"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="20dp" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-    <TextView
-        android:id="@+id/statusText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Status: Not Scanned"
-        android:textSize="18sp"
-        android:layout_marginBottom="20dp" />
+        <!-- Header -->
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_spatial_authentication"
+            android:textColor="#333333"
+            android:textSize="26sp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp"/>
 
-    <Button
-        android:id="@+id/scanButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start Scan" />
+        <!-- Magnetometer Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:strokeColor="#B2EBF2"
+            app:strokeWidth="1dp">
 
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#E0F7FA">
+
+                <TextView
+                    android:id="@+id/magLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_magnetometer"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.1"
+                    android:textColor="#006064"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/magText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/placeholder_mag_values"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    android:fontFamily="monospace"
+                    android:lineSpacingExtra="4dp"
+                    tools:text="X: 0.00\nY: 0.00\nZ: 0.00"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- WiFi Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:strokeColor="#FFE0B2"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#FFF3E0">
+
+                <TextView
+                    android:id="@+id/wifiLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_wifi_networks"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.1"
+                    android:textColor="#E65100"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/wifiText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="80dp"
+                    android:text="@string/placeholder_wifi_scan"
+                    android:textColor="#444444"
+                    android:textSize="16sp"
+                    tools:text="Waiting for scan..."/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Acoustic Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:strokeColor="#D1C4E9"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#F3E5F5">
+
+                <TextView
+                    android:id="@+id/acousticLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_acoustic_signature"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.1"
+                    android:textColor="#4A148C"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/acousticText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/placeholder_acoustic_data"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:fontFamily="monospace"
+                    android:lineSpacingExtra="4dp"
+                    tools:text="Energy: 0.00\nZCR: 0.00\nCentroid: 0.00"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Primary Action Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/scanButton"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/btn_start_spatial_scan"
+            android:textSize="16sp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_menu_mylocation" />
+
+    </LinearLayout>
+</ScrollView>

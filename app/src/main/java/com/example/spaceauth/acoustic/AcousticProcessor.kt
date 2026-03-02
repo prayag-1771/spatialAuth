@@ -3,7 +3,8 @@ package com.example.spaceauth.acoustic
 import org.apache.commons.math3.transform.DftNormalization
 import org.apache.commons.math3.transform.FastFourierTransformer
 import org.apache.commons.math3.transform.TransformType
-import kotlin.math.sqrt
+import kotlin.math.PI
+import kotlin.math.cos
 
 object AcousticProcessor {
 
@@ -22,7 +23,6 @@ object AcousticProcessor {
         if (totalFrames == 0) return FloatArray(5) { 0f }
 
         val fftFeaturesPerFrame = mutableListOf<FloatArray>()
-
         val transformer = FastFourierTransformer(DftNormalization.STANDARD)
 
         for (f in 0 until totalFrames) {
@@ -32,7 +32,7 @@ object AcousticProcessor {
 
             // Apply Hamming window
             for (i in doubleFrame.indices) {
-                val w = 0.54 - 0.46 * kotlin.math.cos(2.0 * Math.PI * i / (doubleFrame.size - 1))
+                val w = 0.54 - 0.46 * cos(2.0 * PI * i / (doubleFrame.size - 1))
                 doubleFrame[i] *= w
             }
 
