@@ -1,35 +1,32 @@
 import numpy as np
 import joblib
-
-
-def load_artifacts():
-    model = joblib.load("models/room_model.pkl")
-    scaler = joblib.load("models/scaler.pkl")
+import os
+def load_artifacts(room_id):
+    room_folder = os.path.join("models", room_id)
+    model_path = os.path.join(room_folder, "model.pkl")
+    scaler_path = os.path.join(room_folder, "scaler.pkl")
+    if not os.path.exists(model_path) or not os.path.exists(scaler_path):
+        raise ValueError(f"Room '{room_id}' not enrolled.")
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
     return model, scaler
-
-
-def authenticate(sample):
-    model, scaler = load_artifacts()
-
-    sample = np.array(sample).reshape(1, -1)
-
-    sample_scaled = scaler.transform(sample)
-
-    prediction = model.predict(sample_scaled)
-    decision_score = model.decision_function(sample_scaled)
-
-    threshold = -0.2
-    if decision_score[0] > threshold:
-        print("ACCEPT")
+def authenticate(room_id, samples):
+    model, scaler = load_artifacts(room_id)
+    samples = np.array(samples)
+    if len(samples.shape) != 2:
+        raise ValueError("Input must be a 2D list of samples.")
+    if samples.shape[1] != 11:
+        raise ValueError("Each sample must contain exactly 11 features.")
+    if samples.shape[0] != 5:
+        raise ValueError("Exactly 5 samples are required for verification.")
+    samples_scaled = scaler.transform(samples)
+    predictions = model.predict(samples_scaled)
+    positive_count = np.sum(predictions == 1)
+    if positive_count >= 3:
+        result = "ACCEPT"
     else:
-        print("REJECT")
-
-    print(f"Decision score: {decision_score[0]}")
-
-
-if __name__ == "__main__":
-
-    # Test sample (similar to enrollment)
-    test_sample = [80,80,80,-30,-30,-30,50,50,50,50,50]
-
-    authenticate(test_sample)
+        result = "REJECT"
+    print("Predictions:", predictions)
+    print("Positive count:", positive_count)
+    print("Final Decision:", result)
+    return result
