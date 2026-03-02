@@ -34,16 +34,16 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
-        compose =false
+        compose = false
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.google.material)
+    implementation("androidx.appcompat:appcompat:1.6.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("androidx.appcompat:appcompat:1.6.1")
 }

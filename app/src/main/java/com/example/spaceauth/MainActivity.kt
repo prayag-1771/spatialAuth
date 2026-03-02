@@ -1,82 +1,112 @@
 package com.example.spaceauth
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
-import android.widget.Button
+import android.os.Handler
+import android.os.Looper
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.spaceauth.magnetometer.MagnetometerSensor
+import com.example.spaceauth.wifi.WifiScanner
+import com.google.android.material.button.MaterialButton
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var statusText: TextView
-    private lateinit var scanButton: Button
-    private lateinit var wifiManager: WifiManager
+    private lateinit var magText: TextView
+    private lateinit var wifiText: TextView
+    private lateinit var scanButton: MaterialButton
+
+    private lateinit var magSensor: MagnetometerSensor
+    private lateinit var wifiScanner: WifiScanner
 
     private val LOCATION_PERMISSION_CODE = 100
+    private val handler = Handler(Looper.getMainLooper())
+    private var updateMagRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        statusText = findViewById(R.id.statusText)
+        // Initialize UI elements
+        magText = findViewById(R.id.magText)
+        wifiText = findViewById(R.id.wifiText)
         scanButton = findViewById(R.id.scanButton)
 
-        wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        // Initialize sensors
+        magSensor = MagnetometerSensor(this)
+        wifiScanner = WifiScanner(this)
 
+        magSensor.startListening()
+
+        // Set button click to start scan
         scanButton.setOnClickListener {
-            checkPermission()
+            checkPermissionAndScan()
         }
+
+        // Update magnetometer live every 1 second
+        updateMagRunnable = object : Runnable {
+            override fun run() {
+                val magFeatures = magSensor.getAverageFeatures()
+                magText.text = String.format(
+                    Locale.getDefault(),
+                    "X: %.2f\nY: %.2f\nZ: %.2f",
+                    magFeatures.magX_avg,
+                    magFeatures.magY_avg,
+                    magFeatures.magZ_avg
+                )
+                handler.postDelayed(this, 1000)
+            }
+        }
+        updateMagRunnable?.let { handler.post(it) }
     }
 
-    private fun checkPermission() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            scanWifi()
+    private fun checkPermissionAndScan() {
+        val permissions = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
+        }
+
+        val missingPermissions = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (missingPermissions.isEmpty()) {
+            performScan()
         } else {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.NEARBY_WIFI_DEVICES
-                ),
+                missingPermissions.toTypedArray(),
                 LOCATION_PERMISSION_CODE
             )
         }
     }
 
-    private fun scanWifi() {
+    private fun performScan() {
+        // --- Magnetometer ---
+        magSensor.reset()
+        magSensor.startListening()
 
-        if (!wifiManager.isWifiEnabled) {
-            statusText.text = "Please enable WiFi first."
-            return
+        // --- WiFi ---
+        wifiScanner.startScan { wifiResults ->
+            val builder = StringBuilder()
+            if (wifiResults.isEmpty()) {
+                builder.append("No networks found or permission denied.")
+            } else {
+                for (wf in wifiResults) {
+                    builder.append("SSID: ${wf.ssid}\nRSSI: ${wf.rssi} dBm\n\n")
+                }
+            }
+            wifiText.text = builder.toString()
         }
-
-        wifiManager.startScan()
-        val results = wifiManager.scanResults
-
-        if (results.isEmpty()) {
-            statusText.text = "No networks found. Ensure Location is ON."
-            return
-        }
-
-        val builder = StringBuilder()
-        builder.append("Networks Found:\n\n")
-
-        for (result in results.take(5)) {
-            builder.append("SSID: ${result.SSID}\n")
-            builder.append("RSSI: ${result.level} dBm\n\n")
-        }
-
-        statusText.text = builder.toString()
     }
 
     override fun onRequestPermissionsResult(
@@ -85,15 +115,17 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (requestCode == LOCATION_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
-            ) {
-                scanWifi()
-            } else {
-                statusText.text = "Permission Denied."
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                performScan()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        magSensor.stopListening()
+        wifiScanner.stopScan()
+        updateMagRunnable?.let { handler.removeCallbacks(it) }
     }
 }
