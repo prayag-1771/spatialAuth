@@ -5,7 +5,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import kotlin.math.sqrt
 
 data class MagFeatures(
     val magX_avg: Float,
@@ -15,49 +14,64 @@ data class MagFeatures(
 
 class MagnetometerSensor(context: Context) : SensorEventListener {
 
-    private val sensorManager =
-        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val magneticSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
-    private val xValues = mutableListOf<Float>()
-    private val yValues = mutableListOf<Float>()
-    private val zValues = mutableListOf<Float>()
+    private var sumX = 0.0
+    private var sumY = 0.0
+    private var sumZ = 0.0
+    private var count = 0
+    private var isListening = false
+
+    private val lock = Any()
 
     fun startListening() {
+        if (isListening) return
         magneticSensor?.let {
-            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+            val success = sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+            isListening = success
         }
     }
 
     fun stopListening() {
+        if (!isListening) return
         sensorManager.unregisterListener(this)
+        isListening = false
     }
 
     fun getAverageFeatures(): MagFeatures {
-        val magX_avg = if (xValues.isNotEmpty()) xValues.average().toFloat() else 0f
-        val magY_avg = if (yValues.isNotEmpty()) yValues.average().toFloat() else 0f
-        val magZ_avg = if (zValues.isNotEmpty()) zValues.average().toFloat() else 0f
-
-        return MagFeatures(magX_avg, magY_avg, magZ_avg)
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        event?.let {
-            if (it.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
-                xValues.add(it.values[0])
-                yValues.add(it.values[1])
-                zValues.add(it.values[2])
+        synchronized(lock) {
+            return if (count > 0) {
+                MagFeatures(
+                    (sumX / count).toFloat(),
+                    (sumY / count).toFloat(),
+                    (sumZ / count).toFloat()
+                )
+            } else {
+                MagFeatures(0f, 0f, 0f)
             }
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Optional: handle accuracy changes if needed
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_MAGNETIC_FIELD) {
+            synchronized(lock) {
+                sumX += event.values[0]
+                sumY += event.values[1]
+                sumZ += event.values[2]
+                count++
+            }
+        }
     }
 
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
     fun reset() {
-        xValues.clear()
-        yValues.clear()
-        zValues.clear()
+        synchronized(lock) {
+            sumX = 0.0
+            sumY = 0.0
+            sumZ = 0.0
+            count = 0
+        }
     }
 }

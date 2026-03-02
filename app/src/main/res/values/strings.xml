@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SpaceAuth</string>
+    <string name="title_spatial_authentication">Spatial Authentication</string>
+    <string name="label_magnetometer">MAGNETOMETER</string>
+    <string name="placeholder_mag_values">X: 0.00\nY: 0.00\nZ: 0.00</string>
+    <string name="label_wifi_networks">WIFI NETWORKS</string>
+    <string name="placeholder_wifi_scan">Waiting for scan...</string>
+    <string name="btn_start_spatial_scan">Start Spatial Scan</string>
 </resources>
