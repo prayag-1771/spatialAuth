@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var wifiText: TextView
     private lateinit var acousticText: TextView
     private lateinit var statusProgressText: TextView
+    private lateinit var dataLogText: TextView
     private lateinit var roomSpinner: AutoCompleteTextView
     
     private lateinit var enrollButton: MaterialButton
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         wifiText = findViewById(R.id.wifiText)
         acousticText = findViewById(R.id.acousticText)
         statusProgressText = findViewById(R.id.statusProgressText)
+        dataLogText = findViewById(R.id.dataLogText)
         roomSpinner = findViewById(R.id.roomSpinner)
         enrollButton = findViewById(R.id.enrollButton)
         authenticateButton = findViewById(R.id.authenticateButton)
@@ -73,10 +75,8 @@ class MainActivity : AppCompatActivity() {
         enrollButton.setOnClickListener { startCollectionSequence(isEnrollment = true) }
         authenticateButton.setOnClickListener { startCollectionSequence(isEnrollment = false) }
 
-        // Setup Spinner
         roomSpinner.setOnItemClickListener { parent, _, position, _ ->
             selectedRoomId = parent.getItemAtPosition(position).toString()
-            Log.d("UI", "Selected Room: $selectedRoomId")
         }
 
         handler.post(object : Runnable {
@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                     val rooms = response.body()?.rooms ?: emptyList()
                     val adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_dropdown_item_1line, rooms)
                     roomSpinner.setAdapter(adapter)
-                    if (rooms.isNotEmpty()) {
+                    if (rooms.isNotEmpty() && roomSpinner.text.isEmpty()) {
                         roomSpinner.setText(rooms[0], false)
                         selectedRoomId = rooms[0]
                     }
@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun runEnrollmentCycle() {
         setButtonsEnabled(false)
+        dataLogText.text = "Recording 20 samples..."
         val allSamples = mutableListOf<List<Float>>()
         val totalSamplesNeeded = 20
 
@@ -150,12 +151,14 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
             }
+            displayCapturedData(allSamples)
             uploadEnrollment(selectedRoomId, allSamples)
         }
     }
 
     private fun runAuthenticationCycle() {
         setButtonsEnabled(false)
+        dataLogText.text = "Recording 5 samples..."
         val allSamples = mutableListOf<List<Float>>()
         val totalSamplesNeeded = 5
 
@@ -171,8 +174,23 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
             }
+            displayCapturedData(allSamples)
             uploadAuthentication(selectedRoomId, allSamples)
         }
+    }
+
+    private fun displayCapturedData(samples: List<List<Float>>) {
+        val sb = StringBuilder()
+        sb.append("ROOM ID: $selectedRoomId\n")
+        sb.append("TOTAL SAMPLES: ${samples.size}\n")
+        sb.append("NOTE: Acoustic FFT normalized (/5000)\n")
+        sb.append("----------------------------\n")
+        samples.forEachIndexed { index, sample ->
+            sb.append(String.format("S#%02d: ", index + 1))
+            sample.forEach { sb.append(String.format("%.4f ", it)) }
+            sb.append("\n")
+        }
+        dataLogText.text = sb.toString()
     }
 
     private suspend fun collectSingle11DVector(): List<Float>? = withContext(Dispatchers.Default) {
@@ -221,67 +239,67 @@ class MainActivity : AppCompatActivity() {
         }
 
         val vector = mutableListOf<Float>()
+        // 1-3: Mag (Unchanged)
         vector.add(currentMagData[0])
         vector.add(currentMagData[1])
         vector.add(currentMagData[2])
+        
+        // 4-6: WiFi (Unchanged)
         vector.add(currentWifiData[0])
         vector.add(currentWifiData[1])
         vector.add(currentWifiData[2])
-        vector.addAll(currentAcousticData.toList())
+        
+        // 7-11: Acoustic FFT (Normalized by 5000f)
+        currentAcousticData.forEach { value ->
+            vector.add(value / 5000f)
+        }
+        
         vector
     }
 
     private fun uploadEnrollment(roomId: String, samples: List<List<Float>>) {
-        statusProgressText.text = "Uploading enrollment data for $roomId..."
+        statusProgressText.text = "Uploading enrollment data..."
         lifecycleScope.launch {
             try {
                 val request = EnrollmentRequest(roomId, samples)
-                Log.d("API", "Enroll Request Body: $request")
+                Log.d("API", "FINAL ENROLL VECTOR: $request")
                 
                 val response = RetrofitClient.api.enrollRoom(request)
                 if (response.isSuccessful) {
-                    statusProgressText.text = "Success: Room $roomId Enrolled!"
+                    statusProgressText.text = "Success: Room Enrolled!"
                     Toast.makeText(this@MainActivity, "Enrolled Room: $roomId", Toast.LENGTH_LONG).show()
-                    fetchRooms() // Refresh the dropdown
+                    fetchRooms()
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Unknown Error"
-                    statusProgressText.text = "API Error (${response.code()}): $errorMsg"
-                    Log.e("API_ERROR", "Code: ${response.code()}, Body: $errorMsg")
+                    statusProgressText.text = "API Error (${response.code()})"
                 }
             } catch (e: Exception) {
-                statusProgressText.text = "Network Error: ${e.localizedMessage}"
-                Log.e("API_ERROR", "Exception during enrollment", e)
+                statusProgressText.text = "Network Error"
             }
             setButtonsEnabled(true)
         }
     }
 
     private fun uploadAuthentication(roomId: String, samples: List<List<Float>>) {
-        statusProgressText.text = "Verifying against $roomId..."
+        statusProgressText.text = "Verifying data..."
         lifecycleScope.launch {
             try {
                 val request = AuthRequest(roomId, samples)
-                Log.d("API", "Auth Request Body: $request")
+                Log.d("API", "FINAL AUTH VECTOR: $request")
                 
                 val response = RetrofitClient.api.authenticateRoom(request)
                 if (response.isSuccessful) {
                     val decision = response.body()?.decision ?: "REJECT"
-                    Log.d("API", "Response Body: ${response.body()}")
-                    statusProgressText.text = "Result for $roomId: $decision"
-                    
+                    statusProgressText.text = "Result: $decision"
                     if (decision == "ACCEPT") {
                         Toast.makeText(this@MainActivity, "✅ ACCESS GRANTED", Toast.LENGTH_LONG).show()
                     } else {
                         Toast.makeText(this@MainActivity, "❌ ACCESS DENIED", Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Unknown Error"
-                    statusProgressText.text = "API Error (${response.code()}): $errorMsg"
-                    Log.e("API_ERROR", "Code: ${response.code()}, Body: $errorMsg")
+                    statusProgressText.text = "API Error (${response.code()})"
                 }
             } catch (e: Exception) {
-                statusProgressText.text = "Network Error: ${e.localizedMessage}"
-                Log.e("API_ERROR", "Exception during auth", e)
+                statusProgressText.text = "Network Error"
             }
             setButtonsEnabled(true)
         }

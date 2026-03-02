@@ -14,7 +14,7 @@ def train_one_class_svm(X):
     model = OneClassSVM(
         kernel='rbf',
         gamma='scale',
-        nu=0.05
+        nu=0.07
     )
     model.fit(X_scaled)
     return model, scaler
