@@ -26,13 +26,39 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="24dp"/>
 
+        <!-- Room Selection Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Select Enrolled Room">
+
+            <AutoCompleteTextView
+                android:id="@+id/roomSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Status/Progress -->
+        <TextView
+            android:id="@+id/statusProgressText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ready"
+            android:textAlignment="center"
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp" />
+
         <!-- Magnetometer Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
+            app:cardElevation="2dp"
             app:strokeColor="#B2EBF2"
             app:strokeWidth="1dp">
 
@@ -40,15 +66,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp"
+                android:padding="12dp"
                 android:background="#E0F7FA">
 
                 <TextView
-                    android:id="@+id/magLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_magnetometer"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:letterSpacing="0.1"
                     android:textColor="#006064"
                     android:textStyle="bold" />
@@ -57,12 +82,11 @@
                     android:id="@+id/magText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:text="@string/placeholder_mag_values"
                     android:textColor="#000000"
-                    android:textSize="20sp"
+                    android:textSize="16sp"
                     android:fontFamily="monospace"
-                    android:lineSpacingExtra="4dp"
                     tools:text="X: 0.00\nY: 0.00\nZ: 0.00"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -71,9 +95,9 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
+            app:cardElevation="2dp"
             app:strokeColor="#FFE0B2"
             app:strokeWidth="1dp">
 
@@ -81,15 +105,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp"
+                android:padding="12dp"
                 android:background="#FFF3E0">
 
                 <TextView
-                    android:id="@+id/wifiLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_wifi_networks"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:letterSpacing="0.1"
                     android:textColor="#E65100"
                     android:textStyle="bold" />
@@ -98,12 +121,11 @@
                     android:id="@+id/wifiText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:minHeight="80dp"
+                    android:layout_marginTop="4dp"
                     android:text="@string/placeholder_wifi_scan"
                     android:textColor="#444444"
-                    android:textSize="16sp"
-                    tools:text="Waiting for scan..."/>
+                    android:textSize="14sp"
+                    tools:text="wifi1: -60 dBm\nwifi2: -70 dBm\nwifi3: -80 dBm"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -113,7 +135,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
+            app:cardElevation="2dp"
             app:strokeColor="#D1C4E9"
             app:strokeWidth="1dp">
 
@@ -121,15 +143,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp"
+                android:padding="12dp"
                 android:background="#F3E5F5">
 
                 <TextView
-                    android:id="@+id/acousticLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_acoustic_signature"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:letterSpacing="0.1"
                     android:textColor="#4A148C"
                     android:textStyle="bold" />
@@ -138,27 +159,35 @@
                     android:id="@+id/acousticText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:text="@string/placeholder_acoustic_data"
                     android:textColor="#000000"
-                    android:textSize="18sp"
+                    android:textSize="14sp"
                     android:fontFamily="monospace"
-                    android:lineSpacingExtra="4dp"
-                    tools:text="Energy: 0.00\nZCR: 0.00\nCentroid: 0.00"/>
+                    tools:text="fft1: 0.1234\nfft2: 0.5678\nfft3: 0.9012\nfft4: 0.3456\nfft5: 0.7890"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Primary Action Button -->
+        <!-- Action Buttons -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/scanButton"
+            android:id="@+id/enrollButton"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="@string/btn_start_spatial_scan"
+            android:layout_height="56dp"
+            android:text="@string/btn_enroll_room"
             android:textSize="16sp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
+            android:layout_marginBottom="12dp"
             app:cornerRadius="8dp"
-            app:icon="@android:drawable/ic_menu_mylocation" />
+            app:icon="@android:drawable/ic_menu_add" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/authenticateButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/btn_authenticate_room"
+            android:textSize="16sp"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_lock_lock"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
     </LinearLayout>
 </ScrollView>
