@@ -58,6 +58,8 @@ class MainActivity : AppCompatActivity() {
     private var existingRooms: List<String> = emptyList()
     
     private var isRecentlyAuthenticated: Boolean = false
+    private var authenticatedRoomId: String? = null
+    private var enrollingRoomFolder: String = "NONE"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,8 +90,8 @@ class MainActivity : AppCompatActivity() {
 
         folderPublic.setOnClickListener { showFolderContent("Public Documents", "This data is accessible to anyone.\n\n- Readme.txt\n- Public_Key.asc") }
         
-        folderSecure1.setOnClickListener { handleSecureFolderClick("Financial Records", "BALANCE: $5,240.00\nLAST TRANSACTION: -$40.00 (Cafeteria)") }
-        folderSecure2.setOnClickListener { handleSecureFolderClick("System Logs", "TRACE: User logged in from unauthorized location\nERROR: Magnetometer jitter detected") }
+        folderSecure1.setOnClickListener { handleSecureFolderClick("SECURE_A", "Financial Records", "BALANCE: $5,240.00\nLAST TRANSACTION: -$40.00 (Cafeteria)") }
+        folderSecure2.setOnClickListener { handleSecureFolderClick("SECURE_B", "System Logs", "TRACE: User logged in from unauthorized location\nERROR: Magnetometer jitter detected") }
 
         roomSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -111,9 +113,17 @@ class MainActivity : AppCompatActivity() {
         fetchRooms()
     }
 
-    private fun handleSecureFolderClick(title: String, content: String) {
-        if (isRecentlyAuthenticated) {
-            showFolderContent(title, content)
+    private fun handleSecureFolderClick(folderKey: String, title: String, content: String) {
+        val currentRoom = authenticatedRoomId
+        if (isRecentlyAuthenticated && currentRoom != null) {
+            val prefs = getSharedPreferences("SpaceAuthPrefs", MODE_PRIVATE)
+            val associated = prefs.getString("folder_$currentRoom", "NONE")
+            
+            if (associated == folderKey) {
+                showFolderContent(title, content)
+            } else {
+                Toast.makeText(this, "ACCESS_DENIED: Room not associated with this folder", Toast.LENGTH_LONG).show()
+            }
         } else {
             Toast.makeText(this, "AUTHENTICATION_REQUIRED: Use SECURE_AUTHENTICATE first", Toast.LENGTH_LONG).show()
         }
@@ -150,7 +160,16 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Enter room name!", Toast.LENGTH_SHORT).show()
             return
         }
-        startCollectionSequence(isEnrollment = true)
+
+        // Show association selection dialog
+        val folders = arrayOf("SECURE_A", "SECURE_B", "NONE")
+        AlertDialog.Builder(this)
+            .setTitle("Associate Folder with $newRoomName")
+            .setItems(folders) { _, which ->
+                enrollingRoomFolder = folders[which]
+                startCollectionSequence(isEnrollment = true)
+            }
+            .show()
     }
 
     private fun startCollectionSequence(isEnrollment: Boolean) {
@@ -181,6 +200,7 @@ class MainActivity : AppCompatActivity() {
         if (selectedRoomIdForAuth.isEmpty()) return
         setButtonsEnabled(false)
         isRecentlyAuthenticated = false
+        authenticatedRoomId = null
         val allSamples = mutableListOf<List<Float>>()
         lifecycleScope.launch(Dispatchers.Main) {
             for (i in 1..5) {
@@ -237,8 +257,15 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val response = RetrofitClient.api.enrollRoom(EnrollmentRequest(roomId, samples))
-                statusProgressText.text = if (response.isSuccessful) "ENROLL_SUCCESS: $roomId" else "ENROLL_FAILED"
-                fetchRooms()
+                if (response.isSuccessful) {
+                    statusProgressText.text = "ENROLL_SUCCESS: $roomId"
+                    // Save association locally
+                    val prefs = getSharedPreferences("SpaceAuthPrefs", MODE_PRIVATE)
+                    prefs.edit().putString("folder_$roomId", enrollingRoomFolder).apply()
+                    fetchRooms()
+                } else {
+                    statusProgressText.text = "ENROLL_FAILED"
+                }
             } catch (e: Exception) { statusProgressText.text = "NETWORK_ERROR" }
             setButtonsEnabled(true)
         }
@@ -252,8 +279,11 @@ class MainActivity : AppCompatActivity() {
                 statusProgressText.text = "DECISION: $decision"
                 if (decision == "ACCEPT") {
                     isRecentlyAuthenticated = true
+                    authenticatedRoomId = roomId
                     Toast.makeText(this@MainActivity, "✅ SYSTEM_UNLOCKED", Toast.LENGTH_SHORT).show()
                 } else {
+                    isRecentlyAuthenticated = false
+                    authenticatedRoomId = null
                     Toast.makeText(this@MainActivity, "❌ ACCESS_DENIED", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) { statusProgressText.text = "NETWORK_ERROR" }
