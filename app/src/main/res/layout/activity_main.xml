@@ -1,233 +1,371 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    android:orientation="vertical">
+    android:background="@color/bg_primary">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/version_footer">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:paddingBottom="24dp">
 
-            <!-- Header -->
+            <!-- TOP BAR -->
             <TextView
-                android:id="@+id/titleText"
+                android:id="@+id/appTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/title_spatial_authentication"
-                android:textColor="#333333"
-                android:textSize="26sp"
-                android:fontFamily="sans-serif-medium"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="24dp"/>
+                android:text="SpaceAuth"
+                android:textColor="@color/accent_cyan"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="52dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
-            <!-- Room Selection Dropdown -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/debugIcon"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Select Enrolled Room">
+                android:text="⚙"
+                android:textSize="22sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="52dp"
+                android:padding="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
-                <AutoCompleteTextView
-                    android:id="@+id/roomSpinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Status/Progress -->
+            <!-- STATUS CHIP -->
             <TextView
                 android:id="@+id/statusProgressText"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ready"
-                android:textAlignment="center"
-                android:textColor="#666666"
-                android:textSize="14sp"
-                android:layout_marginBottom="16dp" />
+                android:text="SYSTEM_READY"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:fontFamily="monospace"
+                android:background="@color/bg_card"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintStart_toStartOf="@id/appTitle"
+                app:layout_constraintTop_toBottomOf="@id/appTitle"/>
 
-            <!-- Magnetometer Card -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- FOLDERS SECTION -->
+            <LinearLayout
+                android:id="@+id/foldersLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#B2EBF2"
-                app:strokeWidth="1dp">
+                android:orientation="horizontal"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                app:layout_constraintTop_toBottomOf="@id/statusProgressText">
+
+                <!-- Public Folder -->
+                <LinearLayout
+                    android:id="@+id/folderPublic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📁"
+                        android:textSize="40sp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PUBLIC"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:fontFamily="monospace"/>
+                </LinearLayout>
+
+                <View android:layout_width="20dp" android:layout_height="1dp"/>
+
+                <!-- Secure Folder 1 -->
+                <LinearLayout
+                    android:id="@+id/folderSecure1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔒"
+                        android:textSize="40sp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SECURE_A"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:fontFamily="monospace"/>
+                </LinearLayout>
+
+                <View android:layout_width="20dp" android:layout_height="1dp"/>
+
+                <!-- Secure Folder 2 -->
+                <LinearLayout
+                    android:id="@+id/folderSecure2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔒"
+                        android:textSize="40sp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SECURE_B"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:fontFamily="monospace"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- TAGLINE -->
+            <TextView
+                android:id="@+id/tagline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ENVIRONMENT_IS_THE_KEY"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:layout_marginTop="24dp"
+                app:layout_constraintStart_toStartOf="@id/appTitle"
+                app:layout_constraintTop_toBottomOf="@id/foldersLayout"/>
+
+            <!-- ENROLL CARD -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/enrollCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="24dp"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tagline">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp"
-                    android:background="#E0F7FA">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_magnetometer"
-                        android:textSize="10sp"
-                        android:letterSpacing="0.1"
-                        android:textColor="#006064"
-                        android:textStyle="bold" />
+                        android:text="📡"
+                        android:textSize="32sp"/>
 
                     <TextView
-                        android:id="@+id/magText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ENROLL_SPACE"
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace"
+                        android:layout_marginTop="8dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/placeholder_mag_values"
-                        android:textColor="#000000"
-                        android:textSize="16sp"
-                        android:fontFamily="monospace"
-                        tools:text="X: 0.00\nY: 0.00\nZ: 0.00"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        android:layout_marginTop="12dp"
+                        android:hint="ROOM_NAME"
+                        app:hintTextColor="@color/accent_cyan"
+                        app:boxStrokeColor="@color/accent_cyan">
 
-            <!-- WiFi Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/roomInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:fontFamily="monospace"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/enrollButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="16dp"
+                        android:text="START_ENROLLMENT"
+                        android:backgroundTint="@color/accent_cyan"
+                        android:textColor="@color/bg_primary"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- VERIFY CARD -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/scanButton"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#FFE0B2"
-                app:strokeWidth="1dp">
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/enrollCard">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp"
-                    android:background="#FFF3E0">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_wifi_networks"
-                        android:textSize="10sp"
-                        android:letterSpacing="0.1"
-                        android:textColor="#E65100"
-                        android:textStyle="bold" />
+                        android:text="🔐"
+                        android:textSize="32sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="VERIFY_SPACE"
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace"
+                        android:layout_marginTop="8dp"/>
+
+                    <Spinner
+                        android:id="@+id/roomSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="12dp"
+                        android:backgroundTint="@color/accent_cyan"
+                        android:theme="@style/ThemeOverlay.AppCompat.Dark"/>
+
+                    <Button
+                        android:id="@+id/authenticateButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="16dp"
+                        android:text="SECURE_AUTHENTICATE"
+                        android:backgroundTint="@color/accent_cyan"
+                        android:textColor="@color/bg_primary"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/bg_card_stroke"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="20dp"/>
+
+                    <!-- SENSOR DATA -->
+                    <TextView
+                        android:id="@+id/magText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MAG: X:0.0 Y:0.0 Z:0.0"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace"/>
 
                     <TextView
                         android:id="@+id/wifiText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/placeholder_wifi_scan"
-                        android:textColor="#444444"
-                        android:textSize="14sp"
-                        tools:text="wifi1: -60 dBm\nwifi2: -70 dBm\nwifi3: -80 dBm"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Acoustic Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#D1C4E9"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="12dp"
-                    android:background="#F3E5F5">
-
-                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_acoustic_signature"
-                        android:textSize="10sp"
-                        android:letterSpacing="0.1"
-                        android:textColor="#4A148C"
-                        android:textStyle="bold" />
+                        android:text="WIFI: SCANNING..."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace"
+                        android:layout_marginTop="4dp"/>
 
                     <TextView
                         android:id="@+id/acousticText"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/placeholder_acoustic_data"
-                        android:textColor="#000000"
-                        android:textSize="14sp"
+                        android:text="FFT: INITIALIZING..."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
                         android:fontFamily="monospace"
-                        tools:text="fft1: 0.1234\nfft2: 0.5678\nfft3: 0.9012\nfft4: 0.3456\nfft5: 0.7890"/>
+                        android:layout_marginTop="4dp"/>
+
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </androidx.cardview.widget.CardView>
 
-            <!-- Action Buttons -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/enrollButton"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="@string/btn_enroll_room"
-                android:textSize="16sp"
-                android:layout_marginBottom="12dp"
-                app:cornerRadius="8dp"
-                app:icon="@android:drawable/ic_menu_add" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/authenticateButton"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="@string/btn_authenticate_room"
-                android:textSize="16sp"
-                android:layout_marginBottom="16dp"
-                app:cornerRadius="8dp"
-                app:icon="@android:drawable/ic_lock_lock"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
-            <!-- Recorded Data Display Area -->
+            <!-- DEBUG LOG -->
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/dataLogText"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="LAST CAPTURED DATA"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="20dp"
+                android:text="SYS_LOG: WAITING"
+                android:textColor="@color/text_secondary"
                 android:textSize="10sp"
-                android:letterSpacing="0.1"
-                android:textColor="#666666"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"/>
+                android:fontFamily="monospace"
+                android:padding="12dp"
+                android:background="@color/bg_card"
+                app:layout_constraintTop_toBottomOf="@id/scanButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#DDDDDD"
-                app:strokeWidth="1dp">
-
-                <TextView
-                    android:id="@+id/dataLogText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp"
-                    android:text="No data captured yet."
-                    android:textColor="#333333"
-                    android:textSize="12sp"
-                    android:fontFamily="monospace"
-                    android:background="#FFFFFF"/>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-</LinearLayout>
+
+    <!-- BOTTOM VERSION TEXT -->
+    <TextView
+        android:id="@+id/version_footer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="v1.0 · Environmental Auth Framework"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
