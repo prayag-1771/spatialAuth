@@ -81,4 +81,4 @@ Secure zone enforcement
 👥 Team
 
 Team Name: Authenticator
-Tagline: Win : Null
+Tagline: Authenticator ? Win : NULL;
