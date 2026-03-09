@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">SpaceAuth</string>
+    <string name="login_title">ACCESS_KEY</string>
+    <string name="login_subtitle">INITIALIZE SYSTEM BIOMETRICS</string>
+    <string name="hint_username">OPERATOR_ID</string>
+    <string name="hint_password">SECURE_PHRASE</string>
+    <string name="login_button_text">START_SEQUENCE</string>
+    
+    <string name="debug_icon">⚙</string>
+    <string name="status_no_room">● SYSTEM_READY</string>
+    <string name="tagline">ENVIRONMENT_IS_THE_KEY</string>
+    <string name="enroll_icon">📡</string>
+    <string name="enroll_title">ENROLL_SPACE</string>
+    <string name="enroll_desc">Register this room\'s signature</string>
+    <string name="verify_icon">🔐</string>
+    <string name="verify_title">VERIFY_SPACE</string>
+    <string name="verify_desc">Authenticate against stored signature</string>
+    <string name="version_footer">v1.0 · Environmental Auth Framework</string>
+    
+    <string name="title_spatial_authentication">Spatial Authentication</string>
+    <string name="label_magnetometer">MAGNETOMETER</string>
+    <string name="placeholder_mag_values">X: 0.00\nY: 0.00\nZ: 0.00</string>
+    <string name="label_wifi_networks">WIFI NETWORKS</string>
+    <string name="placeholder_wifi_scan">Waiting for scan...</string>
+    <string name="label_acoustic_signature">ACOUSTIC SIGNATURE</string>
+    <string name="placeholder_acoustic_data">fft1: 0.00\nfft2: 0.00\nfft3: 0.00\nfft4: 0.00\nfft5: 0.00</string>
+    
+    <string name="btn_enroll_room">Enroll This Room</string>
+    <string name="btn_authenticate_room">Secure Authenticate</string>
+</resources>
